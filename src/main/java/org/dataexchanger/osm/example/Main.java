@@ -1,12 +1,12 @@
-package org.dataexchanger;
-
-import org.dataexchanger.annotations.Id;
+package org.dataexchanger.osm.example;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.dataexchanger.osm.annotations.*;
 
 public class Main {
     public static void main(String[] args) throws ClassNotFoundException {
@@ -29,23 +29,22 @@ public class Main {
         String[] packageNames = className.split("\\.");
         String basePackageName = "";
         if (packageNames.length > 2) {
-            basePackageName = packageNames[0]+"."+packageNames[1];
+            basePackageName = packageNames[0] + "." + packageNames[1];
         }
-        System.out.println(basePackageName);
         Class aClass = Class.forName(className);
         List<String> columnNames = new LinkedList<>();
         Field[] fields = aClass.getDeclaredFields();
-        for (Field field: fields) {
+        for (Field field : fields) {
             if (field.getType().getName().startsWith(basePackageName)) {
                 Class aggragatedClass = Class.forName(field.getType().getName());
 
                 Field[] aggragatedFields = aggragatedClass.getDeclaredFields();
                 for (Field aggragatedField : aggragatedFields) {
                     Annotation aggragatedFieldAnnotation = aggragatedField.getAnnotation(Id.class);
-                        if (aggragatedField.getAnnotation(Id.class) != null) {
-                            String value = ((Id) aggragatedFieldAnnotation).value();
-                            columnNames.add(field.getName() + "_" + value);
-                        }
+                    if (aggragatedField.getAnnotation(Id.class) != null) {
+                        String value = ((Id) aggragatedFieldAnnotation).value();
+                        columnNames.add(field.getName() + "_" + value);
+                    }
                 }
             } else {
                 columnNames.add(field.getName());

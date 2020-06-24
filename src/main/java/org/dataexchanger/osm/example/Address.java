@@ -1,6 +1,6 @@
-package org.dataexchanger;
+package org.dataexchanger.osm.example;
 
-import org.dataexchanger.annotations.Id;
+import org.dataexchanger.osm.annotations.*;
 
 public class Address {
 

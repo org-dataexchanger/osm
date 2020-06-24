@@ -1,4 +1,4 @@
-package org.dataexchanger;
+package org.dataexchanger.osm.example;
 
 public class Employee {
     private String name;
