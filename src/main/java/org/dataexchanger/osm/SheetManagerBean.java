@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Stream;
@@ -17,14 +18,17 @@ import java.util.stream.Stream;
 public class SheetManagerBean implements SheetManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
-    private static final Map<String, List> mappedColumnNames;
-    private static final Map<String, Class<?>> scannedSheetEntities;
+    private final Map<String, List<String>> mappedColumnNames;
+    private final Map<String, Class<?>> scannedSheetEntities;
+    private final Map<String, List<String>> methodNames;
 
-    static {
-        mappedColumnNames = new HashMap<String, List>();
+    public SheetManagerBean() {
+        mappedColumnNames = new HashMap<String, List<String>>();
         scannedSheetEntities = new HashMap<String, Class<?>>();
+        methodNames = new HashMap<>();
     }
 
+    @Override
     public void scanMappedPackages(String... packages) throws IOException, ClassNotFoundException {
         logger.info("Scanning sheet entities");
         Stream.of(packages).forEach(pkg -> {
@@ -35,10 +39,6 @@ public class SheetManagerBean implements SheetManager {
             }
         });
         logger.info("Sheet entities scanning complete");
-    }
-
-    public <T> void scanMappedClass(Class<T> aClass) {
-
     }
     
     /**
@@ -93,7 +93,24 @@ public class SheetManagerBean implements SheetManager {
         }
     }
 
-    public void scanColumnNames(Class<?> aClass, String basePackageName) throws ClassNotFoundException {
+    private void scanGetterMethods(Class<?> aClass, String basePackageName) {
+        List<String> methodList = new ArrayList<>();
+        Method[] getters = aClass.getDeclaredMethods();
+        for (Method getter : getters) {
+            methodList.add(getter.getName());
+        }
+        methodNames.put(aClass.getName(), methodList);
+    }
+
+    /**
+     * Recursive method used to find all classes in a given directory and subdirs.
+     *
+     * @param aClass   The class to be scanned to get the sheet column names
+     * @param basePackageName The package name for mapped classes
+     * @return The classes
+     * @throws ClassNotFoundException
+     */
+    private void scanColumnNames(Class<?> aClass, String basePackageName) throws ClassNotFoundException {
         List<String> columnNames = new LinkedList<String>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
@@ -113,5 +130,17 @@ public class SheetManagerBean implements SheetManager {
             }
         }
         mappedColumnNames.put(aClass.getName(), columnNames);
+    }
+
+    public Map<String, List<String>> getMappedColumnNames() {
+        return this.mappedColumnNames;
+    }
+
+    public Map<String, List<String>> getMethodNames() {
+        return this.methodNames;
+    }
+
+    public Map<String, Class<?>> getScannedSheetEntities() {
+        return this.scannedSheetEntities;
     }
 }

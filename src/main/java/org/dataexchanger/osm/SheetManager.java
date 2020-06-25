@@ -1,10 +1,15 @@
 package org.dataexchanger.osm;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 public interface SheetManager {
     void scanMappedPackages(String... packages) throws IOException, ClassNotFoundException;
 
-    <T> void scanMappedClass(Class<T> aClass);
+    Map<String, List<String>> getMappedColumnNames();
+
+    Map<String, Class<?>> getScannedSheetEntities();
+
+    Map<String, List<String>> getMethodNames();
 }
