@@ -2,6 +2,7 @@ package org.dataexchanger.osm.example;
 
 import org.dataexchanger.osm.annotations.*;
 
+@SheetEntity
 public class Address {
 
     @Id

@@ -32,7 +32,7 @@ public class Main {
             basePackageName = packageNames[0] + "." + packageNames[1];
         }
         Class aClass = Class.forName(className);
-        List<String> columnNames = new LinkedList<>();
+        List<String> columnNames = new LinkedList<String>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
             if (field.getType().getName().startsWith(basePackageName)) {

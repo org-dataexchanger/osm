@@ -1,5 +1,8 @@
 package org.dataexchanger.osm.example;
 
+import org.dataexchanger.osm.annotations.SheetEntity;
+
+@SheetEntity
 public class Employee {
     private String name;
     private String age;

@@ -1,5 +1,8 @@
 .idea
 target
+.settings
+bin
 object-to-excel.iml
-classpath
+.classpath
+.project
 
