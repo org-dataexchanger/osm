@@ -26,11 +26,11 @@ public class SheetManagerFactory {
                 Class clazz = object.getClass();
                 String value = "";
                 if (columnName.contains("_")) {
-                    String propertyName = columnName.split("_")[0];
-                    Object obj = clazz.getMethod(getMethodName(propertyName)).invoke(object);
-                    String aggragatedClassName = obj.getClass().getName();
-                    Class aggragatedClass = Class.forName(aggragatedClassName);
-                    value = aggragatedClass.getMethod("getId").invoke(obj).toString();
+                    String[] splittedPropertyName = columnName.split("_");
+                    Object obj = clazz.getMethod(getMethodName(splittedPropertyName[0])).invoke(object);
+                    String aggregatedClassName = obj.getClass().getName();
+                    Class aggregatedClass = Class.forName(aggregatedClassName);
+                    value = aggregatedClass.getMethod(getMethodName(splittedPropertyName[1])).invoke(obj).toString();
 
                 }
                 else {
