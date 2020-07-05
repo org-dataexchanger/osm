@@ -22,11 +22,11 @@ public class SheetManagerFactoryTest {
     }
 
     @Test
-    public void test_export() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+    public void test_export() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         List<Employee> employees = new ArrayList<Employee>();
         Employee e = new Employee();
         e.setName("Mainul");
-        e.setAge("25");
+        e.setAge(25);
         Address address = new Address();
         address.setId(3);
         address.setHouse("Forest Lodge");

@@ -1,5 +1,7 @@
 package org.dataexchanger.osm;
 
+import org.dataexchanger.osm.model.ColumnMetadata;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,21 +14,21 @@ public class SheetManagerFactory {
     private SheetManager sheetManager;
     private List<Map<String,String>> exported;
 
-    private SheetManagerFactory(SheetManager sheetManager) {
+    SheetManagerFactory(SheetManager sheetManager) {
         this.exported = new ArrayList<>();
         this.sheetManager = sheetManager;
     }
 
     public <T> void export(List<T> objects) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
         String className = objects.get(0).getClass().getName();
-        Map<String, List<String>> columnNamesMap = sheetManager.getMappedColumnNames();
-        List<String> columnNames = columnNamesMap.get(className);
+        Map<String, List<ColumnMetadata>> columnNamesMap = sheetManager.getMappedColumnMetadata();
+        List<ColumnMetadata> columnMetadataList = columnNamesMap.get(className);
         for (T object : objects) {
             Map<String, String> columnValue = new HashMap<>();
-            for (String columnName : columnNames) {
+            /*for (ColumnMetadata metadata : columnMetadataList) {
                 Class clazz = object.getClass();
                 String value = "";
-                if (columnName.contains("_")) {
+                if (metadata.contains("_")) {
                     String[] splittedPropertyName = columnName.split("_");
                     Object obj = clazz.getMethod(getMethodName(splittedPropertyName[0])).invoke(object);
                     String aggregatedClassName = obj.getClass().getName();
@@ -37,7 +39,7 @@ public class SheetManagerFactory {
                     value = clazz.getMethod(getMethodName(columnName)).invoke(object).toString();
                 }
                 columnValue.put(columnName, value);
-            }
+            }*/
             exported.add(columnValue);
         }
     }

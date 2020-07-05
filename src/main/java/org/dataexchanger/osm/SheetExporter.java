@@ -8,12 +8,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dataexchanger.osm.exceptions.InvalidSheetException;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +73,10 @@ public class SheetExporter {
         }
 
         //lets write the excel data to file now
+        writeWorkbookAsFile(workbook, fileName);
+    }
+
+    private void writeWorkbookAsFile(Workbook workbook, String fileName) throws IOException {
         FileOutputStream fos = new FileOutputStream(fileName);
         workbook.write(fos);
         fos.close();

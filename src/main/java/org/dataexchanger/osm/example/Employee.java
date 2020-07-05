@@ -1,11 +1,17 @@
 package org.dataexchanger.osm.example;
 
+import org.dataexchanger.osm.annotations.Column;
 import org.dataexchanger.osm.annotations.SheetEntity;
 
-@SheetEntity
+@SheetEntity(value = "employee")
 public class Employee {
+    @Column(name = "id", getterMethodName = "getId", idField = true)
+    private Long id;
+    @Column(name = "name", getterMethodName = "getName")
     private String name;
-    private String age;
+    @Column(name = "age", getterMethodName = "getAge")
+    private Integer age;
+    @Column(name = "address", getterMethodName = "getAddress")
     private Address address;
 
     public String getName() {
@@ -16,11 +22,11 @@ public class Employee {
         this.name = name;
     }
 
-    public String getAge() {
+    public Integer getAge() {
         return age;
     }
 
-    public void setAge(String age) {
+    public void setAge(Integer age) {
         this.age = age;
     }
 
@@ -30,5 +36,13 @@ public class Employee {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }
