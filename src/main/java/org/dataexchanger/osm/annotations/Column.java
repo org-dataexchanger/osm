@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 
 public @interface Column {
-    String name();
-    String getterMethodName();
+    String name() default "";
     boolean idField() default false;
 }

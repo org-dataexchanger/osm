@@ -107,13 +107,13 @@ public class SheetManagerBean implements SheetManager {
         List<ColumnMetadata> propertyMetadataList = new ArrayList<>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
-            Annotation aggregatedFieldAnnotation = field.getAnnotation(Column.class);
+            Column aggregatedFieldAnnotation = field.getAnnotation(Column.class);
             ColumnMetadata metadata = new ColumnMetadata();
-            metadata.setName(((Column) aggregatedFieldAnnotation).name());
-            metadata.setGetterMethodName(((Column) aggregatedFieldAnnotation).getterMethodName());
+            String sheetColumnName = aggregatedFieldAnnotation.name();
+            metadata.setName(sheetColumnName.equals("") ? field.getName() : sheetColumnName);
             metadata.setType(field.getType());
             metadata.setMappedPropertyName(field.getName());
-            metadata.setIdField(((Column) aggregatedFieldAnnotation).idField());
+            metadata.setIdField(aggregatedFieldAnnotation.idField());
             propertyMetadataList.add(metadata);
         }
         mappedFields.put(aClass.getName(), propertyMetadataList);
