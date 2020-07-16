@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 
 public @interface Column {
     String name();
-    String getterMethodName();
+    String getterMethodName() default "";
     boolean idField() default false;
 }
