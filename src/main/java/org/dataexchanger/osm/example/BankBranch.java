@@ -18,7 +18,7 @@ public class BankBranch implements Serializable {
     @Column(name = "Lat")
     private Double longitude;
     @Column(name = "Lon")
-    private Double latitude;
+    private double latitude;
 
     public Double getLongitude() {
         return longitude;
@@ -28,11 +28,11 @@ public class BankBranch implements Serializable {
         this.longitude = longitude;
     }
 
-    public Double getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Double latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 

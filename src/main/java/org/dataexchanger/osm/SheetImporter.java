@@ -2,6 +2,8 @@ package org.dataexchanger.osm;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -11,6 +13,7 @@ import org.dataexchanger.osm.exceptions.FieldCastException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -70,29 +73,39 @@ public class SheetImporter {
                 Column annotation = field.getAnnotation(Column.class);
                 String colMappingName = StringUtils.isNoneBlank(annotation.name()) ? annotation.name() : field.getName();
                 if(columnName.equalsIgnoreCase(colMappingName)){
-                    setTypeSpecificValue(field, instance, columnValue);
+                    try{
+                        /** dynamic value casting invoking method */
+                        Object val = MethodUtils.invokeExactStaticMethod(field.getType(), "valueOf", columnValue);
+                        field.set(instance, val);
+                    } catch (NoSuchMethodException | ClassCastException e){
+                        setTypeSpecificValue(field, instance, columnValue);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
             }
         }
     }
 
     private void setTypeSpecificValue(Field field, Object instance, String value) throws IllegalAccessException {
+        if(!field.isAccessible())
+            field.setAccessible(true);
         try{
             if(field.getType() == Integer.class || field.getType() == int.class)
-                field.set(instance, Integer.valueOf(value));
-            if(field.getType() == Long.class || field.getType() == long.class)
+                field.set(instance, Integer.valueOf(String.valueOf(value)));
+            else if(field.getType() == Long.class || field.getType() == long.class)
                 field.set(instance, Long.valueOf(value));
-            if(field.getType() == Short.class || field.getType() == short.class)
+            else if(field.getType() == Short.class || field.getType() == short.class)
                 field.set(instance, Short.valueOf(value));
-            if(field.getType() == Double.class || field.getType() == double.class)
+            else if(field.getType() == Double.class || field.getType() == double.class)
                 field.set(instance, Double.valueOf(value));
-            if(field.getType() == Float.class | field.getType() == float.class)
+            else if(field.getType() == Float.class | field.getType() == float.class)
                 field.set(instance, Float.valueOf(value));
-            if(field.getType() == Byte.class || field.getType() == byte.class)
+            else if(field.getType().equals(Byte.class) || field.getType().equals(byte.class))
                 field.set(instance, Byte.valueOf(value));
-            if(field.getType() == Character.class || field.getType() == char.class)
+            else if(field.getType() == Character.class || field.getType() == char.class)
                 field.set(instance, value.charAt(0));
-            if(field.getType() == Boolean.class || field.getType() == boolean.class)
+            else if(field.getType() == Boolean.class || field.getType() == boolean.class)
                 field.set(instance, Boolean.valueOf(value));
             else
                 field.set(instance, value);
@@ -100,16 +113,4 @@ public class SheetImporter {
             throw new FieldCastException(field.getName().concat(" ").concat(ex.getMessage()));
         }
     }
-
-    /*private Map<String, String> mapColumnAndFieldName(Class clazz) throws IllegalAccessException, InstantiationException {
-        Map<String, String> fieldMap = new HashMap<>();
-        for(Field field : clazz.getDeclaredFields()){
-            if(field.isAnnotationPresent(Column.class)){
-                Column annotation = field.getAnnotation(Column.class);
-                String columnName = StringUtils.isNoneBlank(annotation.name()) ? annotation.name() : field.getName();
-                fieldMap.put(columnName, field.getName());
-            }
-        }
-        return fieldMap;
-    }*/
 }
