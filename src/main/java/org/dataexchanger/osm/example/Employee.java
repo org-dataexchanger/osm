@@ -11,7 +11,7 @@ public class Employee {
     private String name;
     @Column(name = "age")
     private Integer age;
-    @Column(name = "address")
+    @Column(name = "address_id")
     private Address address;
 
     public String getName() {

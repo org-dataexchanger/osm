@@ -1,9 +1,11 @@
 package org.dataexchanger.osm;
 
+import org.dataexchanger.osm.annotations.SheetEntity;
 import org.dataexchanger.osm.model.ColumnMetadata;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,58 +13,77 @@ import java.util.Map;
 public class SheetManagerFactory {
 
     private SheetManager sheetManager;
-    private List<Map<String,String>> exported;
+    private Map<String, Map<String,String>> exportableMap;
+    private SheetExporter sheetExporter;
 
-    SheetManagerFactory(SheetManager sheetManager) {
-        this.exported = new ArrayList<>();
-        this.sheetManager = OsmContextHolder.getContext().getSheetManager();
+    SheetManagerFactory(String mappedPackageName) throws IOException, ClassNotFoundException {
+        this.exportableMap = new HashMap<>();
+        this.sheetManager = new SheetManagerBean();
+        this.sheetManager.scanMappedPackages(mappedPackageName);
+        this.sheetExporter = this.sheetManager.getSheetExporter();
     }
 
-    public <T> void export(List<T> objects) throws IllegalAccessException {
-        String className = objects.get(0).getClass().getName();
+    public <T> void export(T object) throws IllegalAccessException, IOException {
+        process(object);
+        sheetExporter.writeWorkbookAsFile();
+    }
+
+    public <T>Object process(T object) throws IllegalAccessException {
+        String className = object.getClass().getName();
+        String sheetName = getSheetName(className);
+        Map<String, String> map = new HashMap<>();
         Map<String, List<ColumnMetadata>> sheetColumnsMetadataMap = sheetManager.getMappedColumnMetadata();
         List<ColumnMetadata> columnMetadataList = sheetColumnsMetadataMap.get(className);
         String packageName = OsmContextHolder.getContext().getScannedPackageName();
-        for (T object : objects) {
-            Class clazz = object.getClass();
-            for(Field field : clazz.getDeclaredFields()){
-                field.setAccessible(true);
-                Object value = null != field.get(object) ? field.get(object) : "";
-                System.out.println(value);
-                if (value.getClass().getName().contains(packageName)) {
-                    String aggregatedFiledName = value.getClass().getName();
+        Class clazz = object.getClass();
+        boolean isIdFound = false;
+        Object id = null;
+        for(Field field : clazz.getDeclaredFields()) {
+            field.setAccessible(true);
+            Object value = null != field.get(object) ? field.get(object) : "";
+            if (!isIdFound) {
+                ColumnMetadata metadata = columnMetadataList.stream()
+                        .filter(columnMetadata -> columnMetadata.isIdField())
+                        .findFirst()
+                        .get();
+                if (field.getName().equals(metadata.getName())) {
+                    id = value;
                 }
+                isIdFound = true;
             }
-            Map<String, String> columnValue = new HashMap<>();
+            // TODO: Processing list of nested sheet entities
+            if (value.getClass().getName().contains(packageName)) {
+                // TODO: Add mapped column metadata checking
+                id = process(value);
+            }
             for (ColumnMetadata metadata : columnMetadataList) {
-
-                String value = "";
-                /*if (metadata.contains("_")) {
-                    String[] splittedPropertyName = columnName.split("_");
-                    Object obj = clazz.getMethod(getMethodName(splittedPropertyName[0])).invoke(object);
-                    String aggregatedClassName = obj.getClass().getName();
-                    Class aggregatedClass = Class.forName(aggregatedClassName);
-                    value = aggregatedClass.getMethod(getMethodName(splittedPropertyName[1])).invoke(obj).toString();
+                if (field.getName().equals(metadata.getMappedPropertyName())) {
+                    if (metadata.getType().getName().contains(packageName)) {
+                        map.put(metadata.getName(), id.toString());
+                    } else {
+                        map.put(metadata.getName(), value.toString());
+                    }
                 }
-                else {
-                    value = clazz.getMethod(getMethodName(columnName)).invoke(object).toString();
-                }
-                columnValue.put(columnName, value);*/
             }
-            exported.add(columnValue);
+
         }
+        this.exportableMap.put(className, map);
+        // TODO: Write to excel
+        sheetExporter.writeExcel(sheetName, map, columnMetadataList);
+        return id;
     }
 
-    private String getFieldValue(Field field) {
-        field.getClass().getName();
-        return "";
-    }
-
-    private String getMethodName(String columnName) {
-        StringBuilder methodNameBuilder = new StringBuilder();
-        return methodNameBuilder.append("get")
-                .append(columnName.substring(0, 1).toUpperCase())
-                .append(columnName.substring(1))
-                .toString();
+    private String getSheetName(String className) {
+        try {
+            Class clazz = Class.forName(className);
+            Annotation annotation = clazz.getAnnotation(SheetEntity.class);
+            if (annotation instanceof SheetEntity) {
+                SheetEntity sheetEntity = (SheetEntity) annotation;
+                return sheetEntity.value();
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

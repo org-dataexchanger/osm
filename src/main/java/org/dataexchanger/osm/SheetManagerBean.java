@@ -18,11 +18,13 @@ public class SheetManagerBean implements SheetManager {
     private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
     private final Map<String, List<ColumnMetadata>> mappedFields;
     private OsmContextImpl osmContext;
+    private SheetExporter sheetExporter;
 
     public SheetManagerBean() {
         mappedFields = new HashMap<>();
         this.osmContext = new OsmContextImpl();
         this.osmContext.setSheetManager(this);
+        this.sheetExporter = new SheetExporter();
         OsmContextHolder ctxHolder = new OsmContextHolder(osmContext);
     }
 
@@ -37,7 +39,7 @@ public class SheetManagerBean implements SheetManager {
         }
         logger.info("Sheet entities scanning complete");
     }
-    
+
     /**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
      *
@@ -104,7 +106,7 @@ public class SheetManagerBean implements SheetManager {
         }
     }
 
-    private void collectEntityMetadata(Class<?> aClass) throws ClassNotFoundException {
+    private void collectEntityMetadata(Class<?> aClass) {
         List<ColumnMetadata> propertyMetadataList = new ArrayList<>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
@@ -122,6 +124,10 @@ public class SheetManagerBean implements SheetManager {
 
     public Map<String, List<ColumnMetadata>> getMappedColumnMetadata() {
         return this.mappedFields;
+    }
+
+    public SheetExporter getSheetExporter() {
+        return this.sheetExporter;
     }
 
     private class OsmContextImpl implements OsmContext {

@@ -15,14 +15,12 @@ public class SheetManagerFactoryTest {
     private SheetManagerFactory sheetManagerFactory;
     @Before
     public void setup() throws IOException, ClassNotFoundException {
-        SheetManager sheetManagerBean = new SheetManagerBean();
-        sheetManagerBean.scanMappedPackages("org.dataexchanger.osm.example");
-        sheetManagerFactory = new SheetManagerFactory(sheetManagerBean);
+        sheetManagerFactory = new SheetManagerFactory("org.dataexchanger.osm.example");
     }
 
     @Test
-    public void test_export() throws IllegalAccessException {
-        List<Employee> employees = new ArrayList<Employee>();
+    public void test_export() throws IllegalAccessException, IOException {
+
         Employee e = new Employee();
         e.setName("Mainul");
         e.setAge(25);
@@ -31,8 +29,7 @@ public class SheetManagerFactoryTest {
         address.setHouse("Forest Lodge");
         address.setStreet("S.S. Academy Road");
         e.setAddress(address);
-        employees.add(e);
 
-        sheetManagerFactory.export(employees);
+        sheetManagerFactory.export(e);
     }
 }
