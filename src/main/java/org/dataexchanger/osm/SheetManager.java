@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface SheetManager {
-    void scanMappedPackages(String... packages) throws IOException, ClassNotFoundException;
+    void scanMappedPackages(String packages) throws IOException, ClassNotFoundException;
 
     Map<String, List<ColumnMetadata>> getMappedColumnMetadata();
 }

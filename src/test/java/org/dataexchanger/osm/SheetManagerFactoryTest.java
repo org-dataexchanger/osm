@@ -12,7 +12,6 @@ import java.util.List;
 
 public class SheetManagerFactoryTest {
 
-
     private SheetManagerFactory sheetManagerFactory;
     @Before
     public void setup() throws IOException, ClassNotFoundException {
@@ -22,7 +21,7 @@ public class SheetManagerFactoryTest {
     }
 
     @Test
-    public void test_export() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    public void test_export() throws IllegalAccessException {
         List<Employee> employees = new ArrayList<Employee>();
         Employee e = new Employee();
         e.setName("Mainul");

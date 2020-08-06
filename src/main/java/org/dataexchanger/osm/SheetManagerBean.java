@@ -9,31 +9,32 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Stream;
 
 public class SheetManagerBean implements SheetManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
     private final Map<String, List<ColumnMetadata>> mappedFields;
+    private OsmContextImpl osmContext;
 
     public SheetManagerBean() {
         mappedFields = new HashMap<>();
+        this.osmContext = new OsmContextImpl();
+        this.osmContext.setSheetManager(this);
+        OsmContextHolder ctxHolder = new OsmContextHolder(osmContext);
     }
 
     @Override
-    public void scanMappedPackages(String... packages) {
+    public void scanMappedPackages(String packageName) {
         logger.info("Scanning sheet entities");
-        Stream.of(packages).forEach(pkg -> {
-            try {
-                scanClasses(pkg);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
+        try {
+            scanClasses(packageName);
+            osmContext.setPackageName(packageName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         logger.info("Sheet entities scanning complete");
     }
     
@@ -119,11 +120,30 @@ public class SheetManagerBean implements SheetManager {
         mappedFields.put(aClass.getName(), propertyMetadataList);
     }
 
-
-    /**
-     * @return mapped field metadata list in a @SheetEntity class
-     * */
     public Map<String, List<ColumnMetadata>> getMappedColumnMetadata() {
         return this.mappedFields;
+    }
+
+    private class OsmContextImpl implements OsmContext {
+        private String packageName;
+        private SheetManager sheetManager;
+
+        protected void setPackageName(String packageName) {
+            this.packageName = packageName;
+        }
+
+        protected void setSheetManager (SheetManager sheetManager) {
+            this.sheetManager = sheetManager;
+        }
+
+        @Override
+        public String getScannedPackageName() {
+            return this.packageName;
+        }
+
+        @Override
+        public SheetManager getSheetManager() {
+            return sheetManager;
+        }
     }
 }

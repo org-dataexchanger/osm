@@ -3,7 +3,6 @@ package org.dataexchanger.osm.model;
 public class ColumnMetadata {
     private String name;
     private String mappedPropertyName;
-    private String getterMethodName;
     private Class type;
     private boolean idField;
 
@@ -13,14 +12,6 @@ public class ColumnMetadata {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getGetterMethodName() {
-        return getterMethodName;
-    }
-
-    public void setGetterMethodName(String getterMethodName) {
-        this.getterMethodName = getterMethodName;
     }
 
     public Class getType() {
