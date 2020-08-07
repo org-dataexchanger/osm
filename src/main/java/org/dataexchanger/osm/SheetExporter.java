@@ -64,7 +64,7 @@ public final class SheetExporter {
         Row row = null;
 
         // If any row exists, get the last row number and update the sheet
-        // Otherwise create the column row
+        // Otherwise create the column names row
         if (sheet.getLastRowNum() > 0) {
             rowIndex = sheet.getPhysicalNumberOfRows();
         } else {
