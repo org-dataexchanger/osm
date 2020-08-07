@@ -3,6 +3,7 @@ package org.dataexchanger.osm;
 import org.dataexchanger.osm.annotations.SheetEntity;
 import org.dataexchanger.osm.model.ColumnMetadata;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -23,11 +24,15 @@ public class SheetManagerFactory {
         this.sheetExporter = this.sheetManager.getSheetExporter();
     }
 
-    public <T> void export(T object) throws IllegalAccessException, IOException {
+    public <T> void prepareWorkbook(T object) throws IllegalAccessException, IOException {
         process(object);
-        sheetExporter.writeWorkbookAsFile();
     }
 
+    public void writeWorkbookAsFile() throws IOException {
+        FileOutputStream fos = new FileOutputStream(sheetExporter.EXPORT_FILE_NAME);
+        sheetExporter.workbook.write(fos);
+        fos.close();
+    }
     public <T>Object process(T object) throws IllegalAccessException {
         String className = object.getClass().getName();
         String sheetName = getSheetName(className);
@@ -37,6 +42,7 @@ public class SheetManagerFactory {
         String packageName = OsmContextHolder.getContext().getScannedPackageName();
         Class clazz = object.getClass();
         boolean isIdFound = false;
+        String idFieldName = "";
         Object id = null;
         for(Field field : clazz.getDeclaredFields()) {
             field.setAccessible(true);
@@ -49,6 +55,7 @@ public class SheetManagerFactory {
                 if (field.getName().equals(metadata.getName())) {
                     id = value;
                 }
+                idFieldName = field.getName();
                 isIdFound = true;
             }
             // TODO: Processing list of nested sheet entities
@@ -69,7 +76,7 @@ public class SheetManagerFactory {
         }
         this.exportableMap.put(className, map);
         // TODO: Write to excel
-        sheetExporter.writeExcel(sheetName, map, columnMetadataList);
+        sheetExporter.writeExcel(sheetName, idFieldName, map, columnMetadataList);
         return id;
     }
 

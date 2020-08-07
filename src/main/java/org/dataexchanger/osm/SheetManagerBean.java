@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.*;
 
-public class SheetManagerBean implements SheetManager {
+public final class SheetManagerBean implements SheetManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
     private final Map<String, List<ColumnMetadata>> mappedFields;

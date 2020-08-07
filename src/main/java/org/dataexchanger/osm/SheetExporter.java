@@ -10,18 +10,16 @@ import org.dataexchanger.osm.exceptions.InvalidSheetException;
 import org.dataexchanger.osm.model.ColumnMetadata;
 
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
-public class SheetExporter {
+public final class SheetExporter {
     private Properties properties;
-    private Workbook workbook = null;
+    protected Workbook workbook = null;
     private final String PROPERTIES_FILE_NAME = "osm.properties";
-    private String EXPORT_FILE_NAME;
+    protected String EXPORT_FILE_NAME;
+    private Map<String, Set<String>> uniqueMap = null;
 
     SheetExporter() {
         try {
@@ -34,6 +32,7 @@ public class SheetExporter {
             }else{
                 throw new InvalidSheetException("Invalid file, should be xls or xlsx");
             }
+            uniqueMap = new HashMap<>();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,33 +48,44 @@ public class SheetExporter {
     }
 
 
-    public void writeExcel(String sheetName, Map<String, String> map, List<ColumnMetadata> columnMetadataList) {
-        Sheet sheet = workbook.createSheet(sheetName);
+    public void writeExcel(String sheetName, String idFieldName, Map<String, String> map, List<ColumnMetadata> columnMetadataList) {
+        Sheet sheet = workbook.getSheet(sheetName);
+        if (sheet == null) sheet = workbook.createSheet(sheetName);
+
+        Set<String> set = null;
+        if (uniqueMap.get(sheetName) != null) {
+            set = uniqueMap.get(sheetName);
+        } else {
+            set = new HashSet<>();
+            uniqueMap.put(sheetName, set);
+        }
 
         int rowIndex = 0;
-        Row row = sheet.createRow(rowIndex++);
-        int columnNameCounter = 0;
-        for (ColumnMetadata columnMetadata : columnMetadataList) {
-            Cell cell = row.createCell(columnNameCounter++);
-            cell.setCellValue(columnMetadata.getName());
+        Row row = null;
+
+        // If any row exists, get the last row number and update the sheet
+        // Otherwise create the column row
+        if (sheet.getLastRowNum() > 0) {
+            rowIndex = sheet.getPhysicalNumberOfRows();
+        } else {
+            row = sheet.createRow(rowIndex++);
+            int columnNameCounter = 0;
+            for (ColumnMetadata columnMetadata : columnMetadataList) {
+                Cell cell = row.createCell(columnNameCounter++);
+                cell.setCellValue(columnMetadata.getName());
+            }
         }
 
-        int columnCount = columnMetadataList.size();
-        row = sheet.createRow(rowIndex++);
-        int columnCounter = 0;
-        while (columnCounter < columnCount) {
-            Cell cell = row.createCell(columnCounter);
-            cell.setCellValue(map.get(columnMetadataList.get(columnCounter++).getName()));
+        String idFieldValue = map.get(idFieldName).toString();
+        if (!set.contains(idFieldValue)) {
+            int columnCount = columnMetadataList.size();
+            row = sheet.createRow(rowIndex++);
+            int columnCounter = 0;
+            while (columnCounter < columnCount) {
+                Cell cell = row.createCell(columnCounter);
+                cell.setCellValue(map.get(columnMetadataList.get(columnCounter++).getName()));
+            }
+            set.add(idFieldValue);
         }
-    }
-
-/*    public Workbook getWorkbook() {
-        return workbook;
-    }*/
-
-    public void writeWorkbookAsFile() throws IOException {
-        FileOutputStream fos = new FileOutputStream(EXPORT_FILE_NAME);
-        workbook.write(fos);
-        fos.close();
     }
 }

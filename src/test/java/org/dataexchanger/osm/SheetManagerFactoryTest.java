@@ -21,15 +21,41 @@ public class SheetManagerFactoryTest {
     @Test
     public void test_export() throws IllegalAccessException, IOException {
 
-        Employee e = new Employee();
-        e.setName("Mainul");
-        e.setAge(25);
-        Address address = new Address();
-        address.setId(3);
-        address.setHouse("Forest Lodge");
-        address.setStreet("S.S. Academy Road");
-        e.setAddress(address);
+        Address address1 = new Address();
+        address1.setId(3);
+        address1.setHouse("Forest Lodge");
+        address1.setStreet("S.S. Academy Road");
 
-        sheetManagerFactory.export(e);
+        Address address2 = new Address();
+        address2.setId(4);
+        address2.setHouse("Avijan 9/2");
+        address2.setStreet("S.S. Academy Road");
+
+        List<Employee> employees = new ArrayList<>();
+        Employee e1 = new Employee();
+        e1.setId(1L);
+        e1.setName("Mainul");
+        e1.setAge(25);
+        e1.setAddress(address1);
+        employees.add(e1);
+
+        Employee e2 = new Employee();
+        e2.setId(2L);
+        e2.setName("Hasan");
+        e2.setAge(26);
+        e2.setAddress(address2);
+        employees.add(e2);
+
+        Employee e3 = new Employee();
+        e3.setId(3L);
+        e3.setName("Siam");
+        e3.setAge(16);
+        e3.setAddress(address1);
+        employees.add(e3);
+
+        for (Employee e : employees) {
+            sheetManagerFactory.prepareWorkbook(e);
+        }
+        sheetManagerFactory.writeWorkbookAsFile();
     }
 }
