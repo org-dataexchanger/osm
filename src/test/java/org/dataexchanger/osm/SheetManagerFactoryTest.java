@@ -57,5 +57,9 @@ public class SheetManagerFactoryTest {
             sheetManagerFactory.prepareWorkbook(e);
         }
         sheetManagerFactory.writeWorkbookAsFile();
+
+        // Or if you want to send the file over the network,
+        // you will need this byte array
+//        byte[] bytes = sheetManagerFactory.getByteContent();
     }
 }

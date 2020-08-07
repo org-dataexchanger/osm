@@ -3,6 +3,7 @@ package org.dataexchanger.osm;
 import org.dataexchanger.osm.annotations.SheetEntity;
 import org.dataexchanger.osm.model.ColumnMetadata;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -28,12 +29,28 @@ public class SheetManagerFactory {
         process(object);
     }
 
+    /**
+     * This method is responsible for writing workbook in filesystem.
+     *
+     * */
     public void writeWorkbookAsFile() throws IOException {
         FileOutputStream fos = new FileOutputStream(sheetExporter.EXPORT_FILE_NAME);
         sheetExporter.workbook.write(fos);
         fos.close();
     }
-    public <T>Object process(T object) throws IllegalAccessException {
+
+    /**
+     * @return byte[]
+     * This method is responsible for getting byte array
+     * This will be helpful to send the file over the network
+     * */
+    public byte[] getByteContent() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        sheetExporter.workbook.write(baos);
+        return baos.toByteArray();
+    }
+
+    private <T>Object process(T object) throws IllegalAccessException {
         String className = object.getClass().getName();
         String sheetName = getSheetName(className);
         Map<String, String> map = new HashMap<>();
