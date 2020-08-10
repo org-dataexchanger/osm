@@ -12,28 +12,54 @@ import java.util.List;
 
 public class SheetManagerFactoryTest {
 
-
     private SheetManagerFactory sheetManagerFactory;
     @Before
     public void setup() throws IOException, ClassNotFoundException {
-        SheetManager sheetManagerBean = new SheetManagerBean();
-        sheetManagerBean.scanMappedPackages("org.dataexchanger.osm.example");
-        sheetManagerFactory = new SheetManagerFactory(sheetManagerBean);
+        sheetManagerFactory = new SheetManagerFactory("org.dataexchanger.osm.example");
     }
 
     @Test
-    public void test_export() throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        List<Employee> employees = new ArrayList<Employee>();
-        Employee e = new Employee();
-        e.setName("Mainul");
-        e.setAge(25);
-        Address address = new Address();
-        address.setId(3);
-        address.setHouse("Forest Lodge");
-        address.setStreet("S.S. Academy Road");
-        e.setAddress(address);
-        employees.add(e);
+    public void test_export() throws IllegalAccessException, IOException {
 
-        sheetManagerFactory.export(employees);
+        Address address1 = new Address();
+        address1.setId(3);
+        address1.setHouse("Forest Lodge");
+        address1.setStreet("S.S. Academy Road");
+
+        Address address2 = new Address();
+        address2.setId(4);
+        address2.setHouse("Avijan 9/2");
+        address2.setStreet("S.S. Academy Road");
+
+        List<Employee> employees = new ArrayList<>();
+        Employee e1 = new Employee();
+        e1.setId(1L);
+        e1.setName("Mainul");
+        e1.setAge(25);
+        e1.setAddress(address1);
+        employees.add(e1);
+
+        Employee e2 = new Employee();
+        e2.setId(2L);
+        e2.setName("Hasan");
+        e2.setAge(26);
+        e2.setAddress(address2);
+        employees.add(e2);
+
+        Employee e3 = new Employee();
+        e3.setId(3L);
+        e3.setName("Siam");
+        e3.setAge(16);
+        e3.setAddress(address1);
+        employees.add(e3);
+
+        for (Employee e : employees) {
+            sheetManagerFactory.prepareWorkbook(e);
+        }
+        sheetManagerFactory.writeWorkbookAsFile();
+
+        // Or if you want to send the file over the network,
+        // you will need this byte array
+//        byte[] bytes = sheetManagerFactory.getByteContent();
     }
 }

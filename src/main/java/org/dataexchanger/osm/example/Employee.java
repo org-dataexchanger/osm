@@ -5,13 +5,13 @@ import org.dataexchanger.osm.annotations.SheetEntity;
 
 @SheetEntity(value = "employee")
 public class Employee {
-    @Column(name = "id", getterMethodName = "getId", idField = true)
+    @Column(name = "id", idField = true)
     private Long id;
-    @Column(name = "name", getterMethodName = "getName")
+    @Column(name = "name")
     private String name;
-    @Column(name = "age", getterMethodName = "getAge")
+    @Column(name = "age")
     private Integer age;
-    @Column(name = "address", getterMethodName = "getAddress")
+    @Column(name = "address_id")
     private Address address;
 
     public String getName() {

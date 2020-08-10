@@ -9,34 +9,37 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.*;
-import java.util.stream.Stream;
 
-public class SheetManagerBean implements SheetManager {
+public final class SheetManagerBean implements SheetManager {
 
     private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
     private final Map<String, List<ColumnMetadata>> mappedFields;
+    private OsmContextImpl osmContext;
+    private SheetExporter sheetExporter;
 
     public SheetManagerBean() {
         mappedFields = new HashMap<>();
+        this.osmContext = new OsmContextImpl();
+        this.osmContext.setSheetManager(this);
+        this.sheetExporter = new SheetExporter();
+        OsmContextHolder ctxHolder = new OsmContextHolder(osmContext);
     }
 
     @Override
-    public void scanMappedPackages(String... packages) {
+    public void scanMappedPackages(String packageName) {
         logger.info("Scanning sheet entities");
-        Stream.of(packages).forEach(pkg -> {
-            try {
-                scanClasses(pkg);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
+        try {
+            scanClasses(packageName);
+            osmContext.setPackageName(packageName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         logger.info("Sheet entities scanning complete");
     }
-    
+
     /**
      * Scans all classes accessible from the context class loader which belong to the given package and subpackages.
      *
@@ -103,27 +106,50 @@ public class SheetManagerBean implements SheetManager {
         }
     }
 
-    private void collectEntityMetadata(Class<?> aClass) throws ClassNotFoundException {
+    private void collectEntityMetadata(Class<?> aClass) {
         List<ColumnMetadata> propertyMetadataList = new ArrayList<>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
-            Annotation aggregatedFieldAnnotation = field.getAnnotation(Column.class);
+            Column aggregatedFieldAnnotation = field.getAnnotation(Column.class);
             ColumnMetadata metadata = new ColumnMetadata();
-            metadata.setName(((Column) aggregatedFieldAnnotation).name());
-            metadata.setGetterMethodName(((Column) aggregatedFieldAnnotation).getterMethodName());
+            String sheetColumnName = aggregatedFieldAnnotation.name();
+            metadata.setName(sheetColumnName.equals("") ? field.getName() : sheetColumnName);
             metadata.setType(field.getType());
             metadata.setMappedPropertyName(field.getName());
-            metadata.setIdField(((Column) aggregatedFieldAnnotation).idField());
+            metadata.setIdField(aggregatedFieldAnnotation.idField());
             propertyMetadataList.add(metadata);
         }
         mappedFields.put(aClass.getName(), propertyMetadataList);
     }
 
-
-    /**
-     * @return mapped field metadata list in a @SheetEntity class
-     * */
     public Map<String, List<ColumnMetadata>> getMappedColumnMetadata() {
         return this.mappedFields;
+    }
+
+    public SheetExporter getSheetExporter() {
+        return this.sheetExporter;
+    }
+
+    private class OsmContextImpl implements OsmContext {
+        private String packageName;
+        private SheetManager sheetManager;
+
+        protected void setPackageName(String packageName) {
+            this.packageName = packageName;
+        }
+
+        protected void setSheetManager (SheetManager sheetManager) {
+            this.sheetManager = sheetManager;
+        }
+
+        @Override
+        public String getScannedPackageName() {
+            return this.packageName;
+        }
+
+        @Override
+        public SheetManager getSheetManager() {
+            return sheetManager;
+        }
     }
 }

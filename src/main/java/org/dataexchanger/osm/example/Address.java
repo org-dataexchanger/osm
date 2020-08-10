@@ -5,11 +5,11 @@ import org.dataexchanger.osm.annotations.*;
 @SheetEntity(value = "address")
 public class Address {
 
-    @Column(name = "id", getterMethodName = "getId", idField = true)
+    @Column(name = "id", idField = true)
     private Integer id;
-    @Column(name = "house", getterMethodName = "getHouse")
+    @Column(name = "house")
     private String house;
-    @Column(name = "street", getterMethodName = "getStreet")
+    @Column(name = "street")
     private String street;
 
     public String getHouse() {
