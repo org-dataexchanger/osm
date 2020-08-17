@@ -3,6 +3,9 @@ package org.dataexchanger.osm.example;
 import org.dataexchanger.osm.annotations.Column;
 import org.dataexchanger.osm.annotations.SheetEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SheetEntity(value = "employee")
 public class Employee {
     @Column(name = "id", idField = true)
@@ -13,6 +16,8 @@ public class Employee {
     private Integer age;
     @Column(name = "address_id")
     private Address address;
+    @Column(name = "employee_contact")
+    private List<Contact> contacts;
 
     public String getName() {
         return name;
@@ -44,5 +49,13 @@ public class Employee {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(List<Contact> contacts) {
+        this.contacts = contacts;
     }
 }

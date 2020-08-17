@@ -32,8 +32,8 @@ public final class SheetManagerBean implements SheetManager {
     public void scanMappedPackages(String packageName) {
         logger.info("Scanning sheet entities");
         try {
-            scanClasses(packageName);
             osmContext.setPackageName(packageName);
+            scanClasses(packageName);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -106,7 +106,7 @@ public final class SheetManagerBean implements SheetManager {
         }
     }
 
-    private void collectEntityMetadata(Class<?> aClass) {
+    private void collectEntityMetadata(Class<?> aClass) throws ClassNotFoundException {
         List<ColumnMetadata> propertyMetadataList = new ArrayList<>();
         Field[] fields = aClass.getDeclaredFields();
         for (Field field : fields) {
@@ -117,6 +117,11 @@ public final class SheetManagerBean implements SheetManager {
             metadata.setType(field.getType());
             metadata.setMappedPropertyName(field.getName());
             metadata.setIdField(aggregatedFieldAnnotation.idField());
+            if (field.getType().getName().contains(osmContext.packageName)) {
+                if (Class.forName(field.getType().getName()).getAnnotation(SheetEntity.class) != null) {
+                    metadata.setSheetEntity(true);
+                }
+            }
             propertyMetadataList.add(metadata);
         }
         mappedFields.put(aClass.getName(), propertyMetadataList);

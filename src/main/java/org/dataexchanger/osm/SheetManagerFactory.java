@@ -79,6 +79,8 @@ public class SheetManagerFactory {
             if (value.getClass().getName().contains(packageName)) {
                 // TODO: Add mapped column metadata checking
                 id = process(value);
+            } else if (value.getClass().getName().contains("List")) {
+                // TODO: Process List
             }
             for (ColumnMetadata metadata : columnMetadataList) {
                 if (field.getName().equals(metadata.getMappedPropertyName())) {
