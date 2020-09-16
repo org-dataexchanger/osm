@@ -31,7 +31,7 @@ public class ExcelExporterTest {
         map.put("age", "26");
         map.put("address_id", "1");
         valueMap.add(map);
-        System.out.println(columnNames.toString());
+//        System.out.println(columnNames.toString());
 //        sheetExporter.writeExcel("employee", valueMap, columnNames);
     }
 }

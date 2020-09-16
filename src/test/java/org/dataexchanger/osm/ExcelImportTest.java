@@ -2,9 +2,12 @@ package org.dataexchanger.osm;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.dataexchanger.osm.example.BankBranch;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -19,17 +22,11 @@ public class ExcelImportTest {
     }
 
     @Test
-    public void testExcelImport(){
-        String resourcePath = "\\src\\main\\resources\\";
-        String filePath = System.getProperty("user.dir").concat(resourcePath).concat("BankBranch.xlsx");
-        try{
-            List<BankBranch> bankBranchList = sheetImporter.mapSheetToClass(filePath, BankBranch.class);
-            if(CollectionUtils.isNotEmpty(bankBranchList)){
-                System.out.println("success");
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
+    public void testExcelImport() throws IllegalAccessException, IOException, InstantiationException {
+        String resourcePath = "./src/test/resources/";
+        System.out.println(getClass().getResource("/").getPath());
+        File file = new File(resourcePath.concat("BankBranch.xlsx"));
+        List<BankBranch> bankBranchList = sheetImporter.mapSheetToClass(file.getPath(), BankBranch.class);
+        Assert.assertNotNull(bankBranchList.get(0));
     }
 }
