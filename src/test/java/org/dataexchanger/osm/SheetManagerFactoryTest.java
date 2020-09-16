@@ -1,23 +1,26 @@
-# OSM - Object Sheet Mapping
-OSM is a project aimed to export and import data from object to sheet and vice-versa in a standardized format. It is currently under development.
+package org.dataexchanger.osm;
 
-### How to start
-To play with OSM, clone the repository and build with 
-```
-mvn clean install
-```
-Now from test packages, find our ```SheetManagerFactoryTest``` and run the test to understanding what is happening.
+import org.dataexchanger.osm.example.Address;
+import org.dataexchanger.osm.example.Employee;
+import org.junit.Before;
+import org.junit.Test;
 
-#### Exporting Object to Sheet 
-#### 1. When one address belongs to many employees.
-##### Initialization
-Scan SheetEntity classes
-```
-    SheetManagerFactory sheetManagerFactory = new SheetManagerFactory("org.dataexchanger.osm.example");
-```
-##### Preparing Objects to Export
-Create Employee and Address objects. Different employees can have same address.
-```
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class SheetManagerFactoryTest {
+
+    private SheetManagerFactory sheetManagerFactory;
+    @Before
+    public void setup() throws IOException, ClassNotFoundException {
+        sheetManagerFactory = new SheetManagerFactory("org.dataexchanger.osm.example");
+    }
+
+    @Test
+    public void test_export() throws IllegalAccessException, IOException {
+
         Address address1 = new Address();
         address1.setId(3);
         address1.setHouse("Forest Lodge");
@@ -49,19 +52,14 @@ Create Employee and Address objects. Different employees can have same address.
         e3.setAge(16);
         e3.setAddress(address1);
         employees.add(e3);
-```
-##### Preparing the workbook
-```
+
         for (Employee e : employees) {
             sheetManagerFactory.prepareWorkbook(e);
         }
-```
-##### Export as file
-```
-    sheetManagerFactory.writeWorkbookAsFile();
-```
+        sheetManagerFactory.writeWorkbookAsFile();
 
-##### Get Byte Array to send as server response
-```
-    byte[] bytes = sheetManagerFactory.getByteContent();
-```
+        // Or if you want to send the file over the network,
+        // you will need this byte array
+//        byte[] bytes = sheetManagerFactory.getByteContent();
+    }
+}

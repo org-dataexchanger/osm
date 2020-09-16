@@ -5,8 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(value = RetentionPolicy.RUNTIME)
-public @interface SheetEntity {
-    String value();
+public @interface Column {
+    String name() default "";
+    boolean idField() default false;
 }

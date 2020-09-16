@@ -2,12 +2,14 @@ package org.dataexchanger.osm.example;
 
 import org.dataexchanger.osm.annotations.*;
 
-@SheetEntity
+@SheetEntity(value = "address")
 public class Address {
 
-    @Id
+    @Column(name = "id", idField = true)
     private Integer id;
+    @Column(name = "house")
     private String house;
+    @Column(name = "street")
     private String street;
 
     public String getHouse() {
