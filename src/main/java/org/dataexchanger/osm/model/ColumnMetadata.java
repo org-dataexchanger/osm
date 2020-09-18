@@ -4,6 +4,7 @@ public class ColumnMetadata {
     private String name;
     private String mappedPropertyName;
     private Class type;
+    private boolean isSheetEntity = false;
     private boolean idField;
 
     public String getName() {
@@ -36,5 +37,13 @@ public class ColumnMetadata {
 
     public void setIdField(boolean idField) {
         this.idField = idField;
+    }
+
+    public boolean isSheetEntity() {
+        return isSheetEntity;
+    }
+
+    public void setSheetEntity(boolean sheetEntity) {
+        isSheetEntity = sheetEntity;
     }
 }
