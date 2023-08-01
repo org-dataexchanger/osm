@@ -1,9 +1,16 @@
 package org.dataexchanger.osm;
 
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.dataexchanger.osm.annotations.Column;
 import org.dataexchanger.osm.annotations.SheetEntity;
+import org.dataexchanger.osm.configuration.SheetConfiguration;
+import org.dataexchanger.osm.enums.MappingStrategyOption;
 import org.dataexchanger.osm.exceptions.InvalidPackageException;
+import org.dataexchanger.osm.exceptions.InvalidSheetException;
 import org.dataexchanger.osm.model.ColumnMetadata;
+import org.dataexchanger.osm.sheetexporter.SheetExporter;
+import org.dataexchanger.osm.sheetexporter.SheetExporterFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,18 +20,18 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.*;
 
-public final class SheetManagerBean implements SheetManager {
+public final class SheetExportManagerBean implements SheetExportManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(SheetManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetExportManager.class);
     private final Map<String, List<ColumnMetadata>> mappedFields;
     private OsmContextImpl osmContext;
     private SheetExporter sheetExporter;
 
-    public SheetManagerBean() {
+    public SheetExportManagerBean(MappingStrategyOption mappingStrategyOption) {
         mappedFields = new HashMap<>();
         this.osmContext = new OsmContextImpl();
         this.osmContext.setSheetManager(this);
-        this.sheetExporter = new SheetExporter();
+        this.sheetExporter = SheetExporterFactory.getInstanceForStrategy(mappingStrategyOption);
         OsmContextHolder ctxHolder = new OsmContextHolder(osmContext);
     }
 
@@ -132,14 +139,14 @@ public final class SheetManagerBean implements SheetManager {
 
     private class OsmContextImpl implements OsmContext {
         private String packageName;
-        private SheetManager sheetManager;
+        private SheetExportManager sheetExportManager;
 
         protected void setPackageName(String packageName) {
             this.packageName = packageName;
         }
 
-        protected void setSheetManager (SheetManager sheetManager) {
-            this.sheetManager = sheetManager;
+        protected void setSheetManager (SheetExportManager sheetExportManager) {
+            this.sheetExportManager = sheetExportManager;
         }
 
         @Override
@@ -148,8 +155,8 @@ public final class SheetManagerBean implements SheetManager {
         }
 
         @Override
-        public SheetManager getSheetManager() {
-            return sheetManager;
+        public SheetExportManager getSheetManager() {
+            return sheetExportManager;
         }
     }
 }

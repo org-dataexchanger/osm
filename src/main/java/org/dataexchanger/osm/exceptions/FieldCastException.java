@@ -5,7 +5,7 @@ package org.dataexchanger.osm.exceptions;
  * @since 7/16/2020
  */
 public class FieldCastException extends RuntimeException {
-    private String message;
+    private final String message;
 
     public FieldCastException(String message) {
         super(message);

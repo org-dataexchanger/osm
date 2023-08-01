@@ -1,21 +1,23 @@
 package org.dataexchanger.osm;
 
+import org.dataexchanger.osm.enums.MappingStrategyOption;
 import org.dataexchanger.osm.example.Address;
 import org.dataexchanger.osm.example.Employee;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SheetManagerFactoryTest {
+public class ExcelExportTest {
 
-    private SheetManagerFactory sheetManagerFactory;
+    private SheetExportHandler sheetExportHandler;
     @Before
     public void setup() throws IOException, ClassNotFoundException {
-        sheetManagerFactory = new SheetManagerFactory("org.dataexchanger.osm.example");
+        sheetExportHandler = new SheetExportHandler();
+        sheetExportHandler.setExportStrategy(MappingStrategyOption.AUTO_MAPPING);
+        sheetExportHandler.scanMappedPackage("org.dataexchanger.osm.example");
     }
 
     @Test
@@ -54,9 +56,9 @@ public class SheetManagerFactoryTest {
         employees.add(e3);
 
         for (Employee e : employees) {
-            sheetManagerFactory.prepareWorkbook(e);
+            sheetExportHandler.prepareWorkbook(e);
         }
-        sheetManagerFactory.writeWorkbookAsFile();
+        sheetExportHandler.writeWorkbookAsFile();
 
         // Or if you want to send the file over the network,
         // you will need this byte array

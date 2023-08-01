@@ -1,4 +1,4 @@
-package org.dataexchanger.osm;
+package org.dataexchanger.osm.sheetexporter;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -6,47 +6,33 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.dataexchanger.osm.configuration.SheetConfiguration;
 import org.dataexchanger.osm.exceptions.InvalidSheetException;
 import org.dataexchanger.osm.model.ColumnMetadata;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
-public final class SheetExporter {
-    private Properties properties;
+public class AutoMappedSheetExporter implements SheetExporter {
+
     protected Workbook workbook = null;
-    private final String PROPERTIES_FILE_NAME = "osm.properties";
-    protected String EXPORT_FILE_NAME;
+
+
     private Map<String, Set<String>> uniqueMap = null;
 
-    SheetExporter() {
+    AutoMappedSheetExporter() {
+        SheetConfiguration sheetConfiguration = new SheetConfiguration();
         try {
-            readProperties();
-             EXPORT_FILE_NAME = properties.getProperty("osm.fileName");
-            if(EXPORT_FILE_NAME.endsWith("xlsx")){
-                workbook = new XSSFWorkbook();
-            }else if(EXPORT_FILE_NAME.endsWith("xls")){
-                workbook = new HSSFWorkbook();
-            }else{
-                throw new InvalidSheetException("Invalid file, should be xls or xlsx");
-            }
+            workbook = sheetConfiguration.getExportWorkbookObject();
             uniqueMap = new HashMap<>();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    private void readProperties() throws IOException {
-        properties = new Properties();
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(PROPERTIES_FILE_NAME);
-        if (inputStream != null) {
-            properties.load(inputStream);
-        } else {
-            throw new FileNotFoundException("property file '" + PROPERTIES_FILE_NAME + "' not found in the classpath");
+            throw new RuntimeException("Value is empty for osm.export.fileName in osm.properties");
         }
     }
 
+    public Workbook getWorkbook() {
+        return workbook;
+    }
 
     public void writeExcel(String sheetName, String idFieldName, Map<String, String> map, List<ColumnMetadata> columnMetadataList) {
         Sheet sheet = workbook.getSheet(sheetName);
@@ -76,7 +62,7 @@ public final class SheetExporter {
             }
         }
 
-        String idFieldValue = map.get(idFieldName).toString();
+        String idFieldValue = map.get(idFieldName);
         if (!set.contains(idFieldValue)) {
             int columnCount = columnMetadataList.size();
             row = sheet.createRow(rowIndex++);

@@ -6,5 +6,5 @@ public interface OsmContext {
         return "";
     }
 
-    SheetManager getSheetManager();
+    SheetExportManager getSheetManager();
 }

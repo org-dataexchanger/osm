@@ -1,7 +1,10 @@
 package org.dataexchanger.osm;
 
 import org.dataexchanger.osm.annotations.SheetEntity;
+import org.dataexchanger.osm.configuration.SheetConfiguration;
+import org.dataexchanger.osm.enums.MappingStrategyOption;
 import org.dataexchanger.osm.model.ColumnMetadata;
+import org.dataexchanger.osm.sheetexporter.SheetExporter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -12,17 +15,23 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SheetManagerFactory {
+public class SheetExportHandler {
 
-    private SheetManager sheetManager;
+    private SheetExportManager sheetExportManager;
     private Map<String, Map<String,String>> exportableMap;
     private SheetExporter sheetExporter;
 
-    SheetManagerFactory(String mappedPackageName) throws IOException, ClassNotFoundException {
+    SheetExportHandler() {
         this.exportableMap = new HashMap<>();
-        this.sheetManager = new SheetManagerBean();
-        this.sheetManager.scanMappedPackages(mappedPackageName);
-        this.sheetExporter = this.sheetManager.getSheetExporter();
+    }
+
+    public void setExportStrategy (MappingStrategyOption exportStrategy) {
+        this.sheetExportManager = new SheetExportManagerBean(exportStrategy);
+        this.sheetExporter = this.sheetExportManager.getSheetExporter();
+    }
+
+    public void scanMappedPackage (String mappedPackageName) throws IOException, ClassNotFoundException {
+        this.sheetExportManager.scanMappedPackages(mappedPackageName);
     }
 
     public <T> void prepareWorkbook(T object) throws IllegalAccessException, IOException {
@@ -34,8 +43,10 @@ public class SheetManagerFactory {
      *
      * */
     public void writeWorkbookAsFile() throws IOException {
-        FileOutputStream fos = new FileOutputStream(sheetExporter.EXPORT_FILE_NAME);
-        sheetExporter.workbook.write(fos);
+        SheetConfiguration sheetConfiguration = new SheetConfiguration();
+        var exportFileName = sheetConfiguration.getExportFileName();
+        FileOutputStream fos = new FileOutputStream(exportFileName);
+        sheetExporter.getWorkbook().write(fos);
         fos.close();
     }
 
@@ -46,7 +57,7 @@ public class SheetManagerFactory {
      * */
     public byte[] getByteContent() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        sheetExporter.workbook.write(baos);
+        sheetExporter.getWorkbook().write(baos);
         return baos.toByteArray();
     }
 
@@ -54,7 +65,7 @@ public class SheetManagerFactory {
         String className = object.getClass().getName();
         String sheetName = getSheetName(className);
         Map<String, String> map = new HashMap<>();
-        Map<String, List<ColumnMetadata>> sheetColumnsMetadataMap = sheetManager.getMappedColumnMetadata();
+        Map<String, List<ColumnMetadata>> sheetColumnsMetadataMap = sheetExportManager.getMappedColumnMetadata();
         List<ColumnMetadata> columnMetadataList = sheetColumnsMetadataMap.get(className);
         String packageName = OsmContextHolder.getContext().getScannedPackageName();
         Class clazz = object.getClass();
@@ -66,7 +77,7 @@ public class SheetManagerFactory {
             Object value = null != field.get(object) ? field.get(object) : "";
             if (!isIdFound) {
                 ColumnMetadata metadata = columnMetadataList.stream()
-                        .filter(columnMetadata -> columnMetadata.isIdField())
+                        .filter(ColumnMetadata::isIdField)
                         .findFirst()
                         .get();
                 if (field.getName().equals(metadata.getName())) {
